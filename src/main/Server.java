@@ -1,5 +1,6 @@
 package main;
 
+import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.ArrayList;
@@ -15,13 +16,34 @@ public class Server {
 
 
     public static void main(String[] args) {
-
+        Socket clientSocket = null;
+        boolean isFirst = true;
         if (args.length != 2) {
             System.out.println("Port 번호를 올바르게 입력해주세요.");
             System.exit(0);
         } else {
             portNum1 = Integer.parseInt(args[0]);
             portNum2 = Integer.parseInt(args[1]);
+        }
+
+        try {
+            ServerSocket serverSocket = new ServerSocket(portNum1);
+
+            List<Socket> list = new ArrayList<Socket>();
+
+            while (true) {
+                // 서버는 항상 열려있어야 함
+                System.out.println("접속 대기중...");
+                clientSocket = serverSocket.accept();
+                list.add(clientSocket);
+
+                System.out.println("Client IP: " + clientSocket.getInetAddress() + "Port: " + clientSocket.getPort());
+
+                // 아래 부분은 접속 된 소켓을 통해 소통을 해야함 - 스레드로 이동해야함.
+                new MainThread(clientSocket, list, isFirst).start();
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
         }
     }
 }
