@@ -5,8 +5,10 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Vector;
 
 public class Server {
+//    Vector<Room> roomV; // 개설된 대화방 Room-vs(Vector) : 대화방 사용자
     public static int portNum1 = -1; // 서버와 채팅 메시지를 주고 받는 용도로 사용되며, #로 시작하는 명령어 전송에도 이용된다.
     public static int portNum2 = -1; // #PUT, #GET 의 동작만을 위해 사용
     public static void main(String[] args) {
@@ -18,7 +20,7 @@ public class Server {
         ServerSocket server_socket;
 
         int count = 0;
-        Thread thread[] = new Thread[10];
+        Vector<Thread> threadV = new Vector<>();
 
         if (args.length != 2) {
             System.out.println("Port 번호를 올바르게 입력해주세요.");
@@ -33,9 +35,8 @@ public class Server {
             //Server의 메인쓰레드는 계속해서 사용자의 접속을 받음
             while(true) {
                 socket = server_socket.accept();
-
-                thread[count] = new Thread(new Receiver(user, socket));
-                thread[count].start();
+                threadV.add(new Thread(new Receiver(user, socket)));
+                threadV.get(count).start();
                 count++;
             }
         } catch (Exception e) {
