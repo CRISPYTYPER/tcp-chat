@@ -6,9 +6,9 @@ import java.net.Socket;
 
 public class Client {
     public static void main(String[] args) {
-//        Socket socket; // Server와 통신하기 위한 Socket
-//        DataInputStream serverInStream = null; // Server로부터 데이터를 읽어들이기 위한 입력스트림
-//        DataOutputStream outputStream;
+        Socket socket; // Server와 통신하기 위한 Socket
+        DataInputStream serverInStream = null; // Server로부터 데이터를 읽어들이기 위한 입력스트림
+        DataOutputStream outputStream;
         boolean isCommand = false;
         String commandPhrase = "";
         String ipAddress = "";
@@ -28,7 +28,7 @@ public class Client {
         BufferedReader reader = new BufferedReader(new InputStreamReader(System.in));
 
         try {
-            while((inputString = reader.readLine()) != null) {
+            while ((inputString = reader.readLine()) != null) {
                 if (inputString.length() == 0) {
                     continue;
                 }
@@ -41,12 +41,35 @@ public class Client {
 //                    commandPhrase는 #지운 명령어 자체(e.g. #JOIN -> JOIN)
                     commandPhrase = splitedInput[0].substring(1);
 
+                    String roomName;
+                    String userName;
                     switch (commandPhrase) {
                         case "CREATE":
-                            System.out.println("#CREATE 입력");
+                            if (splitedInput.length != 3) {
+                                System.out.println("#CREATE (생성할 채팅방의 이름) (사용자 이름)");
+                                System.out.println("위와 같은 형식으로 입력해주세요.");
+                                break;
+                            }
+                            roomName = splitedInput[1];
+                            userName = splitedInput[2];
+
+                            socket = new Socket(InetAddress.getByName(ipAddress), portNum1); // 서버로 접속
+                            serverInStream = new DataInputStream(socket.getInputStream());
+                            outputStream = new DataOutputStream(socket.getOutputStream());
+                            String createReq = "#CREATE " + roomName + " " + userName;
+                            // 서버로 방 생성 명령 전송
+                            outputStream.writeUTF(createReq);
                             break;
                         case "JOIN":
-                            System.out.println("#JOIN 입력");
+                            if (splitedInput.length != 3) {
+                                System.out.println("#JOIN (참여할 채팅방의 이름) (사용자 이름)");
+                                System.out.println("위와 같은 형식으로 입력해주세요.");
+                                break;
+                            }
+                            roomName = splitedInput[1];
+                            userName = splitedInput[2];
+                            System.out.println("1 : " + roomName);
+                            System.out.println("2 : " + userName);
                             break;
                         case "PUT":
                             System.out.println("#PUT 입력");
