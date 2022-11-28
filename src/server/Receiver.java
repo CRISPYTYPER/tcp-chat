@@ -8,6 +8,7 @@ public class Receiver implements Runnable{
     Socket socket;
     DataInputStream in;
     String name;
+    String roomName;
     User user;
     String inString;
 
@@ -24,22 +25,32 @@ public class Receiver implements Runnable{
         switch (splitedInput[0]) {
             case "#CREATE":
                 // TODO 방 생성 명령어 처리
+                this.roomName = splitedInput[1];
+                this.name = splitedInput[2];
+                // 사용자와 생성할 방 이름을 추가해줍니다.
+                user.CreateRoom(name, socket, roomName);
                 break;
             case "#JOIN":
                 // TODO 방 참가 명령어 처리
-
+                this.roomName = splitedInput[1];
+                this.name = splitedInput[2];
+                // 사용자와 참가할 방 이름을 추가해줍니다.
+                user.JoinRoom(name, socket, roomName);
         }
-        // 최초 사용자로부터 닉네임을 읽어들임
-        this.name = in.readUTF();
-        // 사용자 추가해줍니다.
-        user.AddClient(name, socket);
     }
 
     public void run() {
         try {
             while(true) {
                 String msg = in.readUTF();
-                user.sendMsg(msg, name);
+                if(msg.equals("#EXIT")) { // "#EXIT"입력 받으면
+                    user.ExitResponse(this.name);
+                    user.RemoveClient(this.name);
+                } else if (msg.equals("#STATUS")) { // "#STATUS"입력 받으면
+                    user.SendStatus(name);
+                } else {
+                    user.sendMsg(msg, name);
+                }
             }
         } catch(Exception e) {
             user.RemoveClient(this.name);
