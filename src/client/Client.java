@@ -126,6 +126,42 @@ public class Client {
                             break;
                         case "PUT":
                             System.out.println("#PUT 입력");
+                            if (splitedInput.length != 2) {
+                                System.out.println("#PUT (파일명)");
+                                System.out.println("위와 같은 형식으로 입력해주세요.");
+                                break;
+                            }
+                            String fileName = splitedInput[1];
+                            File file = new File(fileName);
+                            if (!file.exists()) {
+                                System.out.println("Error : 해당 파일이 존재하지 않습니다!");
+                                break;
+                            }
+                            long fileSize = file.length();
+                            long totalReadBytes = 0;
+                            byte[] buffer = new byte[65536];
+                            int readBytes;
+                            try {
+                                socket = new Socket(InetAddress.getByName(ipAddress), portNum2);
+                                FileInputStream fileInStream = new FileInputStream(file);
+                                if (!socket.isConnected()) {
+                                    System.out.println("Server : 소켓 연결에 문제가 발생하였습니다!");
+                                    break;
+                                }
+                                OutputStream os = socket.getOutputStream();
+                                while ((readBytes = fileInStream.read(buffer)) > 0) {
+                                    os.write(buffer, 0, readBytes);
+                                    totalReadBytes += readBytes;
+                                    if(readBytes == 65536)
+                                        System.out.print("#");
+                                }
+                                System.out.println("Server : 파일 전송이 완료되었습니다!");
+                                fileInStream.close();
+                                os.close();
+                                socket.close();
+                            } catch (IOException e) {
+                                throw new RuntimeException(e);
+                            }
                             break;
                         case "GET":
                             System.out.println("#GET 입력");

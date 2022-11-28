@@ -1,6 +1,7 @@
 package server;
 
 import java.io.DataInputStream;
+import java.net.ServerSocket;
 import java.net.Socket;
 
 public class Receiver implements Runnable{
@@ -11,11 +12,13 @@ public class Receiver implements Runnable{
     String roomName;
     User user;
     String inString;
+    int portNum2; // file transfer를 위한 port
 
 
-    public Receiver(User user, Socket socket) throws Exception {
+    public Receiver(User user, Socket socket, int portNum2) throws Exception {
         this.user = user;
         this.socket = socket;
+        this.portNum2 = portNum2;
         // 접속한 Client로부터 데이터를 읽어들이기 위한 DataInputStream 생성
         in = new DataInputStream(socket.getInputStream());
 
@@ -28,14 +31,18 @@ public class Receiver implements Runnable{
                 this.roomName = splitedInput[1];
                 this.name = splitedInput[2];
                 // 사용자와 생성할 방 이름을 추가해줍니다.
-                user.CreateRoom(name, socket, roomName);
+                user.CreateRoom(this.name, socket, roomName);
                 break;
             case "#JOIN":
                 // TODO 방 참가 명령어 처리
                 this.roomName = splitedInput[1];
                 this.name = splitedInput[2];
                 // 사용자와 참가할 방 이름을 추가해줍니다.
-                user.JoinRoom(name, socket, roomName);
+                user.JoinRoom(this.name, socket, roomName);
+                break;
+            case "#PUT":
+                ServerSocket server = new ServerSocket(this.portNum2);
+                // 현재 작업중
         }
     }
 

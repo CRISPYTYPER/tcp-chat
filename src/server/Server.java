@@ -32,7 +32,7 @@ public class Server {
             //Server의 메인쓰레드는 계속해서 사용자의 접속을 받음
             while(true) {
                 socket = server_socket.accept();
-                threadV.add(new Thread(new Receiver(user, socket)));
+                threadV.add(new Thread(new Receiver(user, socket, portNum2)));
                 threadV.get(count).start();
                 count++;
             }
