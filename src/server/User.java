@@ -19,7 +19,7 @@ public class User {
                 out.writeUTF("Server : " + roomName + " 생성 후 입장 성공!");
             } else { // 이미 방이 있으면
                 out.writeUTF("#401");// Server : 이미 존재하는 채팅방입니다!
-                socket.close(); // 이거 해도 되나?
+                socket.close();
             }
         } catch (Exception e) {
         }
@@ -33,7 +33,7 @@ public class User {
                 out.writeUTF("Server : " + roomName + " 입장 성공!");
             } else { // 방이 없으면
                 out.writeUTF("#402"); // Server : 존재하지 않는 채팅방입니다!
-                socket.close(); // 이거 해도 되나?
+                socket.close();
 
             }
         } catch (Exception e) {
@@ -91,7 +91,7 @@ public class User {
         while (iterator.hasNext()) {
             String clientname = (String) iterator.next();
             if (roomMap.get(clientname).equals(roomName)) { // 유저가 속한 방의 사람들에게만 보냄
-                if (!name.equals(clientname)) { // 메시지 송신자에게는 보내지 않음 &&
+                if (!name.equals(clientname)) { // 메시지 송신자에게는 보내지 않음
                     clientmap.get(clientname).writeUTF(name + " : " + msg);
                 }
             }
@@ -104,7 +104,7 @@ public class User {
         while (iterator.hasNext()) {
             String clientname = (String) iterator.next();
             if (roomMap.get(clientname).equals(roomName)) { // 유저가 속한 방의 사람들에게만 보냄
-                if (!userName.equals(clientname)) { // 메시지 송신자에게는 보내지 않음 &&
+                if (!userName.equals(clientname)) { // 메시지 송신자에게는 보내지 않음
                     clientmap.get(clientname).writeUTF(serverName + " : " + msg);
                 }
             }

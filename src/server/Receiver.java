@@ -5,7 +5,7 @@ import java.net.InetSocketAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
 
-public class Receiver implements Runnable{
+public class Receiver implements Runnable {
 
     Socket socket;
     ServerSocket socket2;
@@ -67,7 +67,7 @@ public class Receiver implements Runnable{
                     bos.close();
                     bis.close();
                     this.socket2.close();
-                }catch (IOException e) {
+                } catch (IOException e) {
                     e.printStackTrace();
                 }
                 break;
@@ -112,9 +112,9 @@ public class Receiver implements Runnable{
 
     public void run() {
         try {
-            while(true) {
+            while (true) {
                 String msg = in.readUTF();
-                if(msg.equals("#EXIT")) { // "#EXIT"입력 받으면
+                if (msg.equals("#EXIT")) { // "#EXIT"입력 받으면
                     user.ExitResponse(this.name);
                     user.RemoveClient(this.name);
                 } else if (msg.equals("#STATUS")) { // "#STATUS"입력 받으면
@@ -123,7 +123,7 @@ public class Receiver implements Runnable{
                     user.sendMsg(msg, this.name);
                 }
             }
-        } catch(Exception e) {
+        } catch (Exception e) {
             user.RemoveClient(this.name);
         }
     }
