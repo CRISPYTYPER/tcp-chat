@@ -30,14 +30,12 @@ public class Receiver implements Runnable{
         String[] splitedInput = inString.split(" ");
         switch (splitedInput[0]) {
             case "#CREATE":
-                // TODO 방 생성 명령어 처리
                 this.roomName = splitedInput[1];
                 this.name = splitedInput[2];
                 // 사용자와 생성할 방 이름을 추가해줍니다.
                 user.CreateRoom(this.name, socket, roomName);
                 break;
             case "#JOIN":
-                // TODO 방 참가 명령어 처리
                 this.roomName = splitedInput[1];
                 this.name = splitedInput[2];
                 // 사용자와 참가할 방 이름을 추가해줍니다.
@@ -57,7 +55,7 @@ public class Receiver implements Runnable{
                             " is connected. (Port: " + isaClient.getPort() + ")");
                     DataInputStream dis = new DataInputStream(socket2.getInputStream());
                     BufferedInputStream bis = new BufferedInputStream(dis);
-                    BufferedOutputStream bos = new BufferedOutputStream(new FileOutputStream("./src/server/files/" + fileName)); //서버에 파일을 저장하기 위한 String
+                    BufferedOutputStream bos = new BufferedOutputStream(new FileOutputStream("./src/server/files/" + fileName)); //서버에 파일을 저장하기 위한 Stream
                     byte[] buffer = new byte[65536];
                     int readBytes = 0;
                     while ((readBytes = bis.read(buffer)) > 0) {
@@ -72,7 +70,44 @@ public class Receiver implements Runnable{
                 }catch (IOException e) {
                     e.printStackTrace();
                 }
-        }
+                break;
+            case "#GET":
+                this.fileName = splitedInput[1];
+                byte[] buffer = new byte[65536];
+                try {
+                    this.socket2 = new ServerSocket(this.portNum2);
+                    DataOutputStream out = new DataOutputStream(this.socket.getOutputStream());
+                    File file = new File("./src/server/files/" + fileName);
+                    if (!file.exists()) {
+                        System.out.println("Error : 서버에 해당 파일이 존재하지 않습니다!");
+                        out.writeUTF("#404");
+                        break;
+                    }
+                    out.writeUTF("#200");
+                    Socket socket2 = this.socket2.accept(); // 파일 전송을 위한 소켓 생성
+
+                    InetSocketAddress isaClient = (InetSocketAddress) socket2.getRemoteSocketAddress();
+                    System.out.println("A client(" + isaClient.getAddress().getHostAddress() +
+                            " is connected. (Port: " + isaClient.getPort() + ")");
+
+                    BufferedInputStream bis = new BufferedInputStream(new FileInputStream(file));
+                    BufferedOutputStream bos = new BufferedOutputStream(socket2.getOutputStream());
+                    int readBytes = 0;
+                    while ((readBytes = bis.read(buffer)) > 0) {
+                        bos.write(buffer, 0, readBytes);
+                    }
+                    bos.flush();
+                    System.out.println("파일 전송 성공!");
+                    out.writeUTF("Server : 클라이언트로 파일을 성공적으로 전송했습니다!");
+                    bos.close();
+                    bis.close();
+                    this.socket2.close();
+
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+                break;
+        } // switch문 끝
     }
 
     public void run() {

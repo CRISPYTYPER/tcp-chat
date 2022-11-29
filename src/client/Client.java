@@ -13,8 +13,10 @@ public class Client {
         boolean isCommand = false;
         String commandPhrase = "";
         String ipAddress = "";
+        String fileName = "";
         int portNum1 = -1;
         int portNum2 = -1; // 포트번호 초기화
+        byte[] buffer = new byte[65536];
 
         if (args.length != 3) {
             System.out.println("Port 번호를 올바르게 입력해주세요.");
@@ -103,7 +105,7 @@ public class Client {
                             outputStream.writeUTF(joinReq);
                             // 사용자가 채팅 내용을 입력 및 서버로 전송하기 위한 쓰레드 생성 및 시작
                             response = serverInStream.readUTF();
-                            isError = (response.equals("#401") || response.equals("402"));
+                            isError = (response.equals("#401") || response.equals("#402"));
                             if (!isError) {
                                 System.out.println(response); // "클라이언트에 입장성공 메시지 출력"
                                 Thread th = new Thread(new Send(outputStream));
@@ -131,15 +133,14 @@ public class Client {
                                 System.out.println("위와 같은 형식으로 입력해주세요.");
                                 break;
                             }
-                            String fileName = splitedInput[1];
+                            fileName = splitedInput[1];
 
                             File file = new File("./src/client/files/" + fileName);
                             if (!file.exists()) {
                                 System.out.println("Error : 해당 파일이 존재하지 않습니다!");
                                 break;
                             }
-                            long totalReadBytes = 0;
-                            byte[] buffer = new byte[65536];
+
 
                             try {
                                 socket = new Socket(InetAddress.getByName(ipAddress), portNum1);
@@ -149,7 +150,7 @@ public class Client {
                                 // 서버로 파일 수신 대기 준비 명령 전송
                                 outputStream.writeUTF(putReq);
                                 String responseMsg = serverInStream.readUTF();
-                                if(!responseMsg.equals("#200")){
+                                if (!responseMsg.equals("#200")) {
                                     System.out.println("Server : 문제가 발생하였습니다");
                                     break;
                                 }
@@ -166,6 +167,7 @@ public class Client {
                                     if (readBytes == 65536)
                                         System.out.print("#");
                                 }
+                                System.out.println();
                                 bos.flush();
                                 System.out.println("Server : 서버로 파일 전송이 완료되었습니다!");
                                 bos.close();
@@ -178,7 +180,53 @@ public class Client {
                             }
                             break;
                         case "GET":
-                            System.out.println("#GET 입력");
+                            if (splitedInput.length != 2) {
+                                System.out.println("#GET (파일명)");
+                                System.out.println("위와 같은 형식으로 입력해주세요.");
+                                break;
+                            }
+                            fileName = splitedInput[1];
+
+                            try {
+                                socket = new Socket(InetAddress.getByName(ipAddress), portNum1);
+                                serverInStream = new DataInputStream(socket.getInputStream());
+                                outputStream = new DataOutputStream(socket.getOutputStream());
+                                String getReq = "#GET " + fileName;
+                                // 서버로 파일 전송 대기 준비 명령 전송
+                                outputStream.writeUTF(getReq);
+                                String responseMsg = serverInStream.readUTF();
+                                if (responseMsg.equals("404")) {
+                                    System.out.println("Server : 서버에 해당 파일이 존재하지 않습니다!");
+                                    break;
+                                } else if (!responseMsg.equals("#200")) {
+                                    System.out.println("Server : 문제가 발생하였습니다");
+                                    break;
+                                }
+                                socket2 = new Socket(InetAddress.getByName(ipAddress), portNum2);
+                                if (!socket2.isConnected()) {
+                                    System.out.println("Server : 소켓 연결에 문제가 발생하였습니다!");
+                                    break;
+                                }
+
+                                DataInputStream dis = new DataInputStream(socket2.getInputStream());
+                                BufferedInputStream bis = new BufferedInputStream(dis);
+                                BufferedOutputStream bos = new BufferedOutputStream(new FileOutputStream("./src/client/files/" + fileName)); //클라이언트에 파일을 저장하기 위한 Stream
+                                int readBytes = 0;
+                                while ((readBytes = bis.read(buffer)) > 0) {
+                                    bos.write(buffer, 0, readBytes);
+                                    if (readBytes == 65536)
+                                        System.out.print("#");
+                                }
+                                System.out.println();
+                                bos.flush();
+                                bos.close();
+                                responseMsg = serverInStream.readUTF();
+                                System.out.println(responseMsg);
+                                bis.close();
+                                socket2.close();
+                            } catch (IOException e) {
+                                throw new RuntimeException(e);
+                            }
                             break;
                         case "STATUS":
                             // 이 부분은 서버에서 처리됨.
