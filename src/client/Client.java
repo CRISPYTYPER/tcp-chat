@@ -7,6 +7,7 @@ import java.net.Socket;
 public class Client {
     public static void main(String[] args) {
         Socket socket; // Server와 통신하기 위한 Socket
+        Socket socket2; // Server와 파일을 주고 받기 위한 Socket
         DataInputStream serverInStream = null; // Server로부터 데이터를 읽어들이기 위한 입력스트림
         DataOutputStream outputStream;
         boolean isCommand = false;
@@ -125,40 +126,53 @@ public class Client {
                             }
                             break;
                         case "PUT":
-                            System.out.println("#PUT 입력");
                             if (splitedInput.length != 2) {
                                 System.out.println("#PUT (파일명)");
                                 System.out.println("위와 같은 형식으로 입력해주세요.");
                                 break;
                             }
                             String fileName = splitedInput[1];
-                            File file = new File(fileName);
+
+                            File file = new File("./src/client/files/" + fileName);
                             if (!file.exists()) {
                                 System.out.println("Error : 해당 파일이 존재하지 않습니다!");
                                 break;
                             }
-                            long fileSize = file.length();
                             long totalReadBytes = 0;
                             byte[] buffer = new byte[65536];
-                            int readBytes;
+
                             try {
-                                socket = new Socket(InetAddress.getByName(ipAddress), portNum2);
-                                FileInputStream fileInStream = new FileInputStream(file);
-                                if (!socket.isConnected()) {
+                                socket = new Socket(InetAddress.getByName(ipAddress), portNum1);
+                                serverInStream = new DataInputStream(socket.getInputStream());
+                                outputStream = new DataOutputStream(socket.getOutputStream());
+                                String putReq = "#PUT " + fileName;
+                                // 서버로 파일 수신 대기 준비 명령 전송
+                                outputStream.writeUTF(putReq);
+                                String responseMsg = serverInStream.readUTF();
+                                if(!responseMsg.equals("#200")){
+                                    System.out.println("Server : 문제가 발생하였습니다");
+                                    break;
+                                }
+                                BufferedInputStream bis = new BufferedInputStream(new FileInputStream(file));
+                                socket2 = new Socket(InetAddress.getByName(ipAddress), portNum2);
+                                if (!socket2.isConnected()) {
                                     System.out.println("Server : 소켓 연결에 문제가 발생하였습니다!");
                                     break;
                                 }
-                                OutputStream os = socket.getOutputStream();
-                                while ((readBytes = fileInStream.read(buffer)) > 0) {
-                                    os.write(buffer, 0, readBytes);
-                                    totalReadBytes += readBytes;
-                                    if(readBytes == 65536)
+                                BufferedOutputStream bos = new BufferedOutputStream(socket2.getOutputStream());
+                                int readBytes = 0;
+                                while ((readBytes = bis.read(buffer)) > 0) {
+                                    bos.write(buffer, 0, readBytes);
+                                    if (readBytes == 65536)
                                         System.out.print("#");
                                 }
-                                System.out.println("Server : 파일 전송이 완료되었습니다!");
-                                fileInStream.close();
-                                os.close();
-                                socket.close();
+                                bos.flush();
+                                System.out.println("Server : 서버로 파일 전송이 완료되었습니다!");
+                                bos.close();
+                                responseMsg = serverInStream.readUTF();
+                                System.out.println(responseMsg);
+                                bis.close();
+                                socket2.close();
                             } catch (IOException e) {
                                 throw new RuntimeException(e);
                             }

@@ -50,7 +50,7 @@ public class User {
         }
     }
 
-    public synchronized void SendStatus(String name) {
+    public synchronized void SendStatus(String name) { //현재 채팅방의 이름, 구성원의 정보(이름)를 출력
         try {
             DataOutputStream out = clientmap.get(name);
             String roomName = roomMap.get(name);
@@ -85,7 +85,7 @@ public class User {
     }
 
 
-    public synchronized void sendMsg(String msg, String name) throws Exception {
+    public synchronized void sendMsg(String msg, String name) throws Exception { // 다른 유저들에게 메시지 전송
         String roomName = roomMap.get(name); // 유저가 속한 방 이름 가져오기
         Iterator iterator = clientmap.keySet().iterator();
         while (iterator.hasNext()) {
@@ -98,7 +98,7 @@ public class User {
         }
     }
 
-    public synchronized void sendMsg(String msg, String serverName, String userName) throws Exception {
+    public synchronized void sendMsg(String msg, String serverName, String userName) throws Exception { // 서버 이름으로 다른 유저들에게 입장 퇴장 소식을 전하기 윟마
         String roomName = roomMap.get(userName); // 유저가 속한 방 이름 가져오기
         Iterator iterator = clientmap.keySet().iterator();
         while (iterator.hasNext()) {

@@ -1,17 +1,20 @@
 package server;
 
-import java.io.DataInputStream;
+import java.io.*;
+import java.net.InetSocketAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
 
 public class Receiver implements Runnable{
 
     Socket socket;
+    ServerSocket socket2;
     DataInputStream in;
     String name;
     String roomName;
     User user;
     String inString;
+    String fileName; // 전달받을 파일 이름
     int portNum2; // file transfer를 위한 port
 
 
@@ -41,8 +44,34 @@ public class Receiver implements Runnable{
                 user.JoinRoom(this.name, socket, roomName);
                 break;
             case "#PUT":
-                ServerSocket server = new ServerSocket(this.portNum2);
-                // 현재 작업중
+                this.fileName = splitedInput[1];
+                try {
+                    this.socket2 = new ServerSocket(this.portNum2);
+                    DataOutputStream out = new DataOutputStream(this.socket.getOutputStream());
+                    out.writeUTF("#200");
+                    Socket socket2 = this.socket2.accept(); // 파일 전송을 위한 소켓 생성
+
+
+                    InetSocketAddress isaClient = (InetSocketAddress) socket2.getRemoteSocketAddress();
+                    System.out.println("A client(" + isaClient.getAddress().getHostAddress() +
+                            " is connected. (Port: " + isaClient.getPort() + ")");
+                    DataInputStream dis = new DataInputStream(socket2.getInputStream());
+                    BufferedInputStream bis = new BufferedInputStream(dis);
+                    BufferedOutputStream bos = new BufferedOutputStream(new FileOutputStream("./src/server/files/" + fileName)); //서버에 파일을 저장하기 위한 String
+                    byte[] buffer = new byte[65536];
+                    int readBytes = 0;
+                    while ((readBytes = bis.read(buffer)) > 0) {
+                        bos.write(buffer, 0, readBytes);
+                    }
+                    bos.flush();
+                    System.out.println("파일 수신 성공!");
+                    out.writeUTF("Server : 서버에 파일을 성공적으로 저장했습니다!");
+                    bos.close();
+                    bis.close();
+                    this.socket2.close();
+                }catch (IOException e) {
+                    e.printStackTrace();
+                }
         }
     }
 
@@ -54,9 +83,9 @@ public class Receiver implements Runnable{
                     user.ExitResponse(this.name);
                     user.RemoveClient(this.name);
                 } else if (msg.equals("#STATUS")) { // "#STATUS"입력 받으면
-                    user.SendStatus(name);
+                    user.SendStatus(this.name);
                 } else {
-                    user.sendMsg(msg, name);
+                    user.sendMsg(msg, this.name);
                 }
             }
         } catch(Exception e) {
