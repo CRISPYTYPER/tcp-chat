@@ -135,7 +135,8 @@ public class Client {
                             }
                             fileName = splitedInput[1];
 
-                            File file = new File("./src/client/files/" + fileName);
+                            File file = new File("./src/client/files/" + fileName); //테스트용
+//                            File file = new File("./client/files/" + fileName); //제출용
                             if (!file.exists()) {
                                 System.out.println("Error : 해당 파일이 존재하지 않습니다!");
                                 break;
@@ -210,7 +211,10 @@ public class Client {
 
                                 DataInputStream dis = new DataInputStream(socket2.getInputStream());
                                 BufferedInputStream bis = new BufferedInputStream(dis);
+                                //테스트용
                                 BufferedOutputStream bos = new BufferedOutputStream(new FileOutputStream("./src/client/files/" + fileName)); //클라이언트에 파일을 저장하기 위한 Stream
+//                                //제출용
+//                                BufferedOutputStream bos = new BufferedOutputStream(new FileOutputStream("./client/files/" + fileName)); //클라이언트에 파일을 저장하기 위한 Stream
                                 int readBytes = 0;
                                 while ((readBytes = bis.read(buffer)) > 0) {
                                     bos.write(buffer, 0, readBytes);

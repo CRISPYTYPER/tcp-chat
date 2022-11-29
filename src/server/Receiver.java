@@ -55,7 +55,10 @@ public class Receiver implements Runnable {
                             " is connected. (Port: " + isaClient.getPort() + ")");
                     DataInputStream dis = new DataInputStream(socket2.getInputStream());
                     BufferedInputStream bis = new BufferedInputStream(dis);
+                    //테스트용
                     BufferedOutputStream bos = new BufferedOutputStream(new FileOutputStream("./src/server/files/" + fileName)); //서버에 파일을 저장하기 위한 Stream
+                    //제출용
+//                    BufferedOutputStream bos = new BufferedOutputStream(new FileOutputStream("./server/files/" + fileName)); //서버에 파일을 저장하기 위한 Stream
                     byte[] buffer = new byte[65536];
                     int readBytes = 0;
                     while ((readBytes = bis.read(buffer)) > 0) {
@@ -77,7 +80,10 @@ public class Receiver implements Runnable {
                 try {
                     this.socket2 = new ServerSocket(this.portNum2);
                     DataOutputStream out = new DataOutputStream(this.socket.getOutputStream());
+                    //테스트용
                     File file = new File("./src/server/files/" + fileName);
+//                    //제출용
+//                    File file = new File("./server/files/" + fileName);
                     if (!file.exists()) {
                         System.out.println("Error : 서버에 해당 파일이 존재하지 않습니다!");
                         out.writeUTF("#404");
